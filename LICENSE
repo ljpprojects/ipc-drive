@@ -1,0 +1,94 @@
+ACOA2 License
+
+Copyright (c) 2025 ljpprojects
+
+The "Software" refers to the source code, associated documentation, and/or
+    any other associated files.
+
+The "Licensee" refers to anyone obtaining a copy, derivative, and/or portion
+    of the Software.
+
+"Derivatives" are derivative works.
+
+The "Contributors" are anyone who is acknowledged in the Software itself as
+    having made contribution. If this is a Derivative, the
+    contributors of the Software it is derived from are also contributors to
+    this Derivative.
+
+The "Core Tenets" of ACOA2 are:
+
+    (1) Preventing the intentional restriction of access.
+
+    (2) Allowing successors.
+
+    (3) Allowing multiple included, not effective, licenses.
+
+    (4) Allowing Derivatives to opt-out of an ACOA license in at least one case.
+
+    (5) The inability to remove core tenets, and the ability to add more.
+
+Acknowledging that ACOA2 is the succesor to ACOA1,
+
+Permission is granted, without charge, to the Licensee, to deal in the Software
+without limitation of the rights to use, copy, modify, merge, publish, and/or
+distribute copies of the Software, provided the following conditions are met
+and upheld:
+
+    (1) The ability of others to obtain copies of the Software and to create
+        Derivatives based on the Software is not further restrited intentionally,
+        in any manner, whether it be by requiring compensation to obtain copies
+        of the Software or make Derivatives from the Software, the introduction
+        of further restrictions on who is eligible to obtain copies of the
+        Software or make Derivatives from the Software, or by any other means,
+        unless with the exception of any of the cases described below:
+
+            (a) The Software exposes sensitive information.
+                In this case, the Licensee may restrict access to the Software
+                to any extent.
+
+            (b) The Software has been replaced by a new version or replacement.
+                In this case, the Licensee may restrict access to the Software,
+                provided that the new version or replacement takes its place,
+                and that others may still obtain copies and create Derivatives
+                of the Software.
+
+            (c) The Software was accidentally exposed before it was intended to
+                be. In this case, the Licensee may restrict access to the Software,
+                but no further than its original restrictions, before it was
+                exposed.
+
+    (2) All copies and Derivatives of the Software must be licensed under the
+        ACOA2 license, and the full ACOA2 license must accompany it, unless
+        another license is included in the original Software, in which case the
+        Licensee may choose which license the Derivative or copy is licensed
+        under.
+
+    (3) The Software is not licensed under any other license.
+
+Permission is granted to the Licensee to include any other license with the
+Software, in addition to the full ACOA2 license. The Software is not and may not
+be licensed under these included licenses, but the creators of Derivatives may
+choose to license their derivative under one of them, as stated above.
+
+Permission is granted to the Licensee to relicense the Software under a successor
+or predecessor of the ACOA2 license. In this case, all terms of the ACOA2 license
+are rendered null and void, and are replaced by the terms of the new license.
+Any copies or Derivatives of the Software obtained before the new license was
+in effect will remain under ACOA2, provided that they were licensed under ACOA2.
+You may use the successor or predecessor to the ACOA2 license if and only if the
+following criteria are met by the chosen license:
+
+    (1) The Core Tenets are upheld in the chosen license.
+
+    (2) The chosen license explicitly states or acknowledges that it is the succesor
+        to ACOA2. If the new license is a predecessor to a newer ACOA license,
+        it will and must have a newer ACOA license acknowledge that that newer
+        ACOA license is the successor to the chosen license.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
