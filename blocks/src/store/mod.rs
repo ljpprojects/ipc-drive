@@ -1,7 +1,6 @@
 pub mod op;
 
-use std::{collections::{HashMap, HashSet}, error::Error, process::Stdio, sync::{atomic::{AtomicPtr, Ordering}, Arc}, time::Duration};
-use async_broadcast::TryRecvError;
+use std::{collections::{HashMap, HashSet}, error::Error, ops::Deref, process::Stdio, sync::{atomic::{AtomicPtr, Ordering}, Arc}, time::Duration};
 use sysinfo::{Pid, System};
 use smol::{future, lock::RwLock, process::{ChildStdin, ChildStdout, Command}, Timer};
 use tracing::{error, info, trace};
@@ -31,8 +30,8 @@ impl Store {
     }
 
     /// Returns a clone of the internal Store::active_blocks
-    pub fn active_blocks(&self) -> HashMap<Uuid, (Block, u32)> {
-        self.active_blocks.clone()
+    pub fn active_blocks(&self) -> &HashMap<Uuid, (Block, u32)> {
+        &self.active_blocks
     }
 
     /// Creates and adds a new process, returning its PID when successful.
@@ -53,50 +52,7 @@ impl Store {
         tx.set_overflow(true);
 
         // No one's listening.
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
+        // ...
         // Right?
         tx.broadcast(vec![]).await?;
 
@@ -133,7 +89,7 @@ impl Store {
 
             smol::spawn(async move {
                 loop {
-                    Timer::after(Duration::from_millis(50)).await;
+                    Timer::after(Duration::from_millis(500)).await;
 
                     let mut active_blocks_changes_recv_w = active_blocks_changes_recv.write().await;
 
@@ -145,6 +101,9 @@ impl Store {
 
                             let mut blocks_w = blocks.write().await;
 
+                            blocks_w.clear();
+                            blocks_w.shrink_to(new_blocks.len());
+
                             for (i, block) in new_blocks {
                                 match blocks_w.get_mut(i) {
                                     Some(item) => *item = block,
@@ -152,12 +111,7 @@ impl Store {
                                 }
                             }
                         }
-                        Err(TryRecvError::Empty) => (),
-                        Err(e) => {
-                            error!(
-                                "Error while receiving block changes on pid {pid}:\n{e}"
-                            );
-                        }
+                        Err(_) => (),
                     };
 
                     future::yield_now().await;
@@ -193,7 +147,7 @@ impl Store {
 
                 let recv_block = 'retryloop: loop {
                     // This is not sketchy, this is getting around Rust's restrictive 'safety' rules.
-                    match send_block(block.clone(), unsafe { stdin.load(Ordering::Relaxed).as_mut().unwrap() }, unsafe { stdout.load(Ordering::Relaxed).as_mut().unwrap() }).await {
+                    match send_block(block.deref(), unsafe { stdin.load(Ordering::Relaxed).as_mut().unwrap() }, unsafe { stdout.load(Ordering::Relaxed).as_mut().unwrap() }).await {
                         Err(e) => {
                             if depth + 1 > 5 {
                                 error!(
@@ -253,11 +207,11 @@ impl Store {
 
                 // recv_block is now guaranteed to be valid
                 // This means we can now check for operations and perform them
-                if let Some((op, senders)) = op_manager_w.take_operation_for(&recv_block.uuid()) {
-                    match op.clone() {
+                if let Some((ref op, senders)) = op_manager_w.take_operation_for(&recv_block.uuid()) {
+                    match op {
                         Operation::Delete => {
                             let data = OperationCompletionData {
-                                block: None
+                                block: Some(recv_block.clone())
                             };
 
                             for sender in senders {
@@ -284,7 +238,11 @@ impl Store {
                             for sender in senders {
                                 let data = data.clone();
 
-                                sender.send(data).await.unwrap()
+                                if let Err(e) = sender.send(data).await {
+                                    error!(
+                                        "Could not send result of Read operation:\n{e}"
+                                    )
+                                }
                             }
                         },
                         Operation::Replace(to) => {
@@ -330,7 +288,7 @@ impl Store {
                         }
                     };
 
-                    trace!(
+                    info!(
                         "Operation {:?} for block {:?} has been performed.",
                         op,
                         recv_block.uuid(),
@@ -362,14 +320,14 @@ impl Store {
 
             let process_pid = match process_pids.into_iter().min_by_key(|(_, v)| *v) {
                 Some((pid, count)) if count < BLOCKS_PER_PROCESS => {
-                    store_w.active_blocks.insert(block_id, (block.clone(), pid));
+                    store_w.active_blocks.insert(block_id, (block, pid));
 
                     pid
                 },
                 _ => {
                     let new_slave_pid = store_w.spawn_new_slave_process().await?;
 
-                    store_w.active_blocks.insert(block_id, (block.clone(), new_slave_pid));
+                    store_w.active_blocks.insert(block_id, (block, new_slave_pid));
 
                     new_slave_pid
                 }
@@ -399,14 +357,14 @@ impl Store {
     }
 
     pub fn start_event_loops(store: Arc<RwLock<Store>>, op_manager: Arc<RwLock<OperationsManager>>, processes: HashSet<u32>) {
-        for pid in processes.clone() {
-            // Start the pass loop for blocks handled by this new process
-            smol::spawn(Store::event_loop_for(store.clone(), op_manager.clone(), pid)).detach();
-        }
-
         info!(
             "Event loops for processes {processes:?} started."
         );
+
+        for pid in processes {
+            // Start the pass loop for blocks handled by this new process
+            smol::spawn(Store::event_loop_for(store.clone(), op_manager.clone(), pid)).detach();
+        }
     }
 
     pub fn remove_block(&mut self, block: &Uuid) {

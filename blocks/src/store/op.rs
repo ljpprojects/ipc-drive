@@ -92,14 +92,18 @@ impl OperationsManager {
     }
 
     pub async fn do_operation(op_manager: Arc<RwLock<OperationsManager>>, op: Operation, on: Uuid) -> Result<OperationCompletionData, Box<dyn Error + Send + Sync>> {
-        let (tx, rx) = channel::bounded::<OperationCompletionData>(16);
+        let (tx, rx) = channel::unbounded::<OperationCompletionData>();
+
+        // Make sure the channels open
+        tx.send(OperationCompletionData { block: None }).await.unwrap();
+        rx.recv().await.unwrap();
 
         let tx = Arc::new(tx);
 
         op_manager.write().await.add_operation(op, on, tx).unwrap();
 
         rx.recv().or(async {
-            Timer::after(Duration::from_millis(TIMEOUT_MS)).await;
+            Timer::after(Duration::from_millis(TIMEOUT_MS * 10_000)).await;
 
             Err(RecvError) // Make some shit up
         }).await.map_err(|_| Box::new(RecvTimeoutError::Timeout) as Box<dyn Error + Send + Sync>)

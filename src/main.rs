@@ -28,11 +28,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     smol::block_on(async {
         info!(
-            srcfile = "blocks/src/ipc/rfc-62.txt",
+            srcfile = "blocks/target/release/master-proc",
             "Splitting source file into chunks..."
         );
 
-        let data_chunks = include_bytes!("../blocks/src/ipc/rfc-62.txt").chunks(BLOCK_SIZE - HEADER_SIZE);
+        let data_chunks = include_bytes!("../blocks/target/release/master-proc").chunks(BLOCK_SIZE - HEADER_SIZE);
         let mut padded_chunks = data_chunks.map(|c| (c, c.len())).collect::<Vec<(&[u8], usize)>>();
 
         let chunk_count = padded_chunks.len();
@@ -124,7 +124,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             );
 
             smol::spawn(async move {
-                for block in proc_blocks {
+                for block in proc_blocks.clone() {
                     // Check that the requested block exists
                     if !store.read().await.active_blocks().contains_key(&block.uuid()) {
                         warn!(
@@ -167,7 +167,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
 
                 if progress.fetch_add(1, Ordering::Relaxed) + 1 == pids.len() as i32 {
-                    event_done.notify(0);
+                    event_done.notify(isize::MAX);
                 }
             }).detach();
         }
@@ -181,11 +181,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         let data = chunks.read().await.concat();
 
         info!(
-            dist_file = "src/recv-rfc-62.txt",
+            dist_file = "recv-master-bin",
             "Writing received data to file."
         );
 
-        fs::write("./recv-rfc-62.txt", data)?;
+        fs::write("./recv-master-bin", data)?;
 
         Ok(())
     })
